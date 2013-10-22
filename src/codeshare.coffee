@@ -15,6 +15,8 @@ routes = require './routes'
 http = require 'http'
 path = require 'path'
 io = require 'socket.io'
+hljs = require 'highlight.js'
+
 
 codeshare = module.exports = express()
 
@@ -54,41 +56,164 @@ if codeshare.get('env') is 'development'
   codeshare.use(express.errorHandler())
 
 
-###
-	Routes
-###
-
-#	serve index
-codeshare.get('/', routes.index)
-
 # instantiate server
 server = http.createServer(codeshare)
 io = io.listen(server)
 
+decodeHTMLEntities = (text) ->
+	entities = [
+		['apos', '\'']
+		['amp', '&']
+		['lt', '<']
+		['gt', '>']
+		['nbsp', '	']
+	]
+	for entity in entities
+		text = text.replace(new RegExp('&'+entity[0]+';', 'g'), entity[1])
+	return text
 
 class Editor
 	constructor: () ->
-		@content = "Write something here..."
-		@syntax	 = "javascript"
-		@theme   = "monokai"
-		
+		@content = "socket.on('changedSyntax', (data) ->\n    myEditor.syntax = data.new_syntax"
+		@syntax	 = "coffeescript"
+		@theme   = "github"
+		@syntaxes = [
+			"python"
+			"profile"
+			"ruby"
+			"perl"
+			"php"
+			"scala"
+			"go"
+			"xml"
+			"css"
+			"markdown"
+			"django"
+			"json"
+			"javascript"
+			"coffeescript"
+			"actionscript"
+			"vbscript"
+			"http"
+			"lua"
+			"delphi"
+			"java"
+			"cpp"
+			"objectivec"
+			"vala"
+			"cs"
+			"d"
+			"rsl"
+			"rib"
+			"mel"
+			"sql"
+			"smalltalk"
+			"lisp"
+			"clojure"
+			"ini"
+			"apache"
+			"nginx"
+			"diff"
+			"dos"
+			"con", "prn"
+			"bash"
+			"cmake"
+			"axapta"
+			"1c"
+			"avrasm"
+			"vhdl"
+			"parser3"
+			"tex"
+			"haskell"
+			"erlang"
+			"rust"
+			"matlab"
+			"r"
+			"glsl"
+			"applescript"
+			"brainfuck"
+		]
+		@themes = [
+			"arta"
+			"ascetoc"
+			"brown_paper"
+			"dark"
+			"default"
+			"far"
+			"github"
+			"googlecode"
+			"idea"
+			"ir_black"
+			"magula"
+			"monokai"
+			"pojoaque"
+			"rainbow"
+			"school_book"
+			"solarized_dark"
+			"solarized_light"
+			"sunburst"
+			"tomorrow-night-blue"
+			"tomorrow-night-bright"
+			"tomorrow-night-eighties"
+			"tomorrow-night-night"
+			"tomorrow"
+			"vs"
+			"xcode"
+			"zenburn"
+		]
+
 myEditor = new Editor
 # instantiate socket.io
 io.sockets.on('connection', (socket) ->
-	socket.emit('init', {editor: myEditor})
+
+	myEditor.content = decodeHTMLEntities(
+		hljs.highlight(
+			myEditor.syntax,
+			myEditor.content
+				.replace(/<(?!br\s*\/?)[^>]+>/g, "") # remove html tags but br
+				.replace(/<br>/g, "\n") #replace br with \n
+		).value
+	)
+	socket.emit('init', {editor: myEditor })
 
 	socket.on('changedContent', (data) ->
-		myEditor.content = data.new_content
-		socket.broadcast.emit('changedContent', {new_content: myEditor.content})
+		myEditor.content = hljs.highlight(
+			myEditor.syntax,
+			data.new_content
+				.replace(/<(?!br\s*\/?)[^>]+>/g, "") # remove html tags but br
+				.replace(/<br>/g, "\n") #replace br with \n
+		).value
+		socket.broadcast.emit('changedContent', {new_content: decodeHTMLEntities(myEditor.content) })
+	)
+	socket.on('updateContent', (data) ->
+		myEditor.content = hljs.highlight(
+			myEditor.syntax,
+			data.new_content
+				.replace(/<(?!br\s*\/?)[^>]+>/g, "") # remove html tags but br
+				.replace(/<br>/g, "\n") #replace br with \n
+		).value
+		socket.emit('changedContent', {new_content: decodeHTMLEntities(myEditor.content) })
+		socket.broadcast.emit('changedContent', {new_content: decodeHTMLEntities(myEditor.content) })
 	)
 	socket.on('changedSyntax', (data) ->
 		myEditor.syntax = data.new_syntax
 		socket.broadcast.emit('changedSyntax', {new_syntax: myEditor.syntax})
 	)
 	socket.on('changedTheme', (data) ->
-		myEditor.theme = data.new_syntax
+		myEditor.theme = data.new_theme
 		socket.broadcast.emit('changedSyntax', {new_theme: myEditor.theme})	)
 )
+
+###
+	Routes
+###
+codeshare.get('/', (req, res) ->
+	res.render('index', {
+		title: 'Codeshare.js'
+		editor: myEditor
+	})
+)
+
 
 server.listen(codeshare.get('port'), () ->
 	console.log('Express server listening on port ' + codeshare.get('port'))

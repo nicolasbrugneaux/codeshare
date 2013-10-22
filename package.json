@@ -22,7 +22,8 @@
   "dependencies": {
     "express": "3.4",
     "jade": "0.35",
-    "socket.io":"latest"
+    "socket.io":"latest",
+    "highlight.js":"latest"
   },
   "devDependencies": {
     "matchdep": "~0.1.1",

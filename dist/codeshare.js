@@ -13,7 +13,7 @@
 
 
 (function() {
-  var Editor, codeshare, express, http, io, myEditor, path, routes, server;
+  var Editor, codeshare, decodeHTMLEntities, express, hljs, http, io, myEditor, path, routes, server;
 
   express = require('express');
 
@@ -24,6 +24,8 @@
   path = require('path');
 
   io = require('socket.io');
+
+  hljs = require('highlight.js');
 
   codeshare = module.exports = express();
 
@@ -66,22 +68,27 @@
     codeshare.use(express.errorHandler());
   }
 
-  /*
-  	Routes
-  */
-
-
-  codeshare.get('/', routes.index);
-
   server = http.createServer(codeshare);
 
   io = io.listen(server);
 
+  decodeHTMLEntities = function(text) {
+    var entities, entity, _i, _len;
+    entities = [['apos', '\''], ['amp', '&'], ['lt', '<'], ['gt', '>'], ['nbsp', '	']];
+    for (_i = 0, _len = entities.length; _i < _len; _i++) {
+      entity = entities[_i];
+      text = text.replace(new RegExp('&' + entity[0] + ';', 'g'), entity[1]);
+    }
+    return text;
+  };
+
   Editor = (function() {
     function Editor() {
-      this.content = "Write something here...";
-      this.syntax = "javascript";
-      this.theme = "monokai";
+      this.content = "socket.on('changedSyntax', (data) ->\n    myEditor.syntax = data.new_syntax";
+      this.syntax = "coffeescript";
+      this.theme = "github";
+      this.syntaxes = ["python", "profile", "ruby", "perl", "php", "scala", "go", "xml", "css", "markdown", "django", "json", "javascript", "coffeescript", "actionscript", "vbscript", "http", "lua", "delphi", "java", "cpp", "objectivec", "vala", "cs", "d", "rsl", "rib", "mel", "sql", "smalltalk", "lisp", "clojure", "ini", "apache", "nginx", "diff", "dos", "con", "prn", "bash", "cmake", "axapta", "1c", "avrasm", "vhdl", "parser3", "tex", "haskell", "erlang", "rust", "matlab", "r", "glsl", "applescript", "brainfuck"];
+      this.themes = ["arta", "ascetoc", "brown_paper", "dark", "default", "far", "github", "googlecode", "idea", "ir_black", "magula", "monokai", "pojoaque", "rainbow", "school_book", "solarized_dark", "solarized_light", "sunburst", "tomorrow-night-blue", "tomorrow-night-bright", "tomorrow-night-eighties", "tomorrow-night-night", "tomorrow", "vs", "xcode", "zenburn"];
     }
 
     return Editor;
@@ -91,13 +98,23 @@
   myEditor = new Editor;
 
   io.sockets.on('connection', function(socket) {
+    myEditor.content = decodeHTMLEntities(hljs.highlight(myEditor.syntax, myEditor.content.replace(/<(?!br\s*\/?)[^>]+>/g, "").replace(/<br>/g, "\n")).value);
     socket.emit('init', {
       editor: myEditor
     });
     socket.on('changedContent', function(data) {
-      myEditor.content = data.new_content;
+      myEditor.content = hljs.highlight(myEditor.syntax, data.new_content.replace(/<(?!br\s*\/?)[^>]+>/g, "").replace(/<br>/g, "\n")).value;
       return socket.broadcast.emit('changedContent', {
-        new_content: myEditor.content
+        new_content: decodeHTMLEntities(myEditor.content)
+      });
+    });
+    socket.on('updateContent', function(data) {
+      myEditor.content = hljs.highlight(myEditor.syntax, data.new_content.replace(/<(?!br\s*\/?)[^>]+>/g, "").replace(/<br>/g, "\n")).value;
+      socket.emit('changedContent', {
+        new_content: decodeHTMLEntities(myEditor.content)
+      });
+      return socket.broadcast.emit('changedContent', {
+        new_content: decodeHTMLEntities(myEditor.content)
       });
     });
     socket.on('changedSyntax', function(data) {
@@ -107,10 +124,22 @@
       });
     });
     return socket.on('changedTheme', function(data) {
-      myEditor.theme = data.new_syntax;
+      myEditor.theme = data.new_theme;
       return socket.broadcast.emit('changedSyntax', {
         new_theme: myEditor.theme
       });
+    });
+  });
+
+  /*
+  	Routes
+  */
+
+
+  codeshare.get('/', function(req, res) {
+    return res.render('index', {
+      title: 'Codeshare.js',
+      editor: myEditor
     });
   });
 

@@ -1,5 +1,16 @@
-class Editor
+decodeHTMLEntities = (text) ->
+	entities = [
+		['apos', '\'']
+		['amp', '&']
+		['lt', '<']
+		['gt', '>']
+		['nbsp', '	']
+	]
+	for entity in entities
+		text = text.replace(new RegExp('&'+entity[0]+';', 'g'), entity[1])
+	return text
 
+class Editor
 	constructor: (editor) ->
 		@content = {
 			dom: document.querySelector('#editor')
@@ -14,27 +25,35 @@ class Editor
 			raw: ""
 		}
 		@setContent(editor.content)
-		@setTheme(editor.theme)
-		@setSyntax(editor.syntax)
+
+		@syntax.dom.onchange = (e) =>
+			@setSyntax(e.target.value)
+			socket.emit('changedSyntax', { new_syntax: @syntax.raw })
+
+		@theme.dom.onchange = (e) =>
+			@setTheme(e.target.value)
+			socket.emit('changedTheme', { new_theme: @theme.raw })
 		@listen()
 
 	setContent: (content) =>
 		@content.raw = content
 		@content.dom.innerHTML = content
 
-	setTheme: (theme) =>
-		@theme.raw = theme
-		@theme.dom.innerHTML = theme
-
 	setSyntax: (syntax) =>
 		@syntax.raw = syntax
-		@syntax.dom.innerHTML = syntax
+		@syntax.dom.value = syntax
+		@content.dom.setAttribute('class', syntax)
+
+	setTheme: (theme) =>
+		@theme.raw = theme
+		@theme.dom.value = theme
+		document.querySelector('#color-theme').href = "vendor/hightlight.js/styles/#{@theme.raw}.css"
 
 	listen: () =>
 		setInterval () =>
 			if @content.dom.innerHTML != @content.raw
-				@content.raw = @content.dom.innerHTML
-				socket.emit('changedContent', { new_content: @content.raw })
+				@content.raw = @content.dom.innerHTML.replace('<div>','\n').replace('</div>', '')
+				socket.emit('changedContent', { new_content: decodeHTMLEntities(@content.raw) })
 		, 2000
 
 myEditor = undefined
@@ -43,18 +62,14 @@ socket = io.connect('http://localhost')
 
 socket.on('init', (data) ->
 	myEditor = new Editor( data.editor )
-	console.log myEditor.content
-	console.log myEditor
 )
 socket.on('changedContent', (data) ->
-	console.log data
 	myEditor.setContent(data.new_content)
 )
 socket.on('changedSyntax', (data) ->
-	myEditor.setTheme(data.new_theme)
+	myEditor.setSyntax(data.new_syntax)
+	socket.emit('updateContent', { new_content: decodeHTMLEntities(@content.dom.innerHTML) })
 )
 socket.on('changedTheme', (data) ->
-	myEditor.setSyntax(data.new_syntax)
+	myEditor.setTheme(data.new_theme)
 )
-
-# todo theme and syntax
