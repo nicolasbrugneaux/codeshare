@@ -13,7 +13,7 @@
 
 
 (function() {
-  var codeshare, express, http, io, path, routes, server;
+  var Editor, codeshare, express, http, io, myEditor, path, routes, server;
 
   express = require('express');
 
@@ -77,12 +77,40 @@
 
   io = io.listen(server);
 
+  Editor = (function() {
+    function Editor() {
+      this.content = "Write something here...";
+      this.syntax = "javascript";
+      this.theme = "monokai";
+    }
+
+    return Editor;
+
+  })();
+
+  myEditor = new Editor;
+
   io.sockets.on('connection', function(socket) {
-    socket.broadcast.emit('news', {
-      hello: 'world'
+    socket.emit('init', {
+      editor: myEditor
     });
-    return socket.on('my other event', function(data) {
-      return console.log(data);
+    socket.on('changedContent', function(data) {
+      myEditor.content = data.new_content;
+      return socket.broadcast.emit('changedContent', {
+        new_content: myEditor.content
+      });
+    });
+    socket.on('changedSyntax', function(data) {
+      myEditor.syntax = data.new_syntax;
+      return socket.broadcast.emit('changedSyntax', {
+        new_syntax: myEditor.syntax
+      });
+    });
+    return socket.on('changedTheme', function(data) {
+      myEditor.theme = data.new_syntax;
+      return socket.broadcast.emit('changedSyntax', {
+        new_theme: myEditor.theme
+      });
     });
   });
 

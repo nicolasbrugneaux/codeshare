@@ -65,12 +65,29 @@ codeshare.get('/', routes.index)
 server = http.createServer(codeshare)
 io = io.listen(server)
 
+
+class Editor
+	constructor: () ->
+		@content = "Write something here..."
+		@syntax	 = "javascript"
+		@theme   = "monokai"
+		
+myEditor = new Editor
 # instantiate socket.io
 io.sockets.on('connection', (socket) ->
-	socket.broadcast.emit('news', {hello: 'world'})
-	socket.on('my other event', (data) ->
-		console.log data
+	socket.emit('init', {editor: myEditor})
+
+	socket.on('changedContent', (data) ->
+		myEditor.content = data.new_content
+		socket.broadcast.emit('changedContent', {new_content: myEditor.content})
 	)
+	socket.on('changedSyntax', (data) ->
+		myEditor.syntax = data.new_syntax
+		socket.broadcast.emit('changedSyntax', {new_syntax: myEditor.syntax})
+	)
+	socket.on('changedTheme', (data) ->
+		myEditor.theme = data.new_syntax
+		socket.broadcast.emit('changedSyntax', {new_theme: myEditor.theme})	)
 )
 
 server.listen(codeshare.get('port'), () ->
