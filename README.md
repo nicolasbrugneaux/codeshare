@@ -5,16 +5,6 @@ Try to remake codeshare.io in coffeescript with nodejs
 ## Getting Started
 Install the module with: `npm install codeshare`
 
-```javascript
-var codeshare = require('codeshare');
-codeshare.awesome(); // "awesome"
-```
-
-```coffee-script
-codeshare = require 'codeshare'
-codeshare.awesome() // "awesome"
-```
-
 ## Documentation
 _(Coming soon)_
 
