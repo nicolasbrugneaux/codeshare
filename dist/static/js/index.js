@@ -38,20 +38,21 @@
       this.setSyntax = __bind(this.setSyntax, this);
       this.setContent = __bind(this.setContent, this);
       var _this = this;
-      this.content({
+      this.content = {
         dom: document.querySelector('#editor'),
         raw: ""
-      });
-      this.syntax({
+      };
+      this.syntax = {
         dom: document.querySelector('#syntax'),
         raw: ""
-      });
-      this.theme({
+      };
+      this.theme = {
         dom: document.querySelector('#theme'),
         raw: ""
-      });
+      };
       this.setContent(editor.content);
       this.setTheme(editor.theme);
+      this.setSyntax(editor.syntax);
       this.syntax.dom.onchange = function(e) {
         _this.setSyntax(e.target.value);
         return socket.emit('changedSyntax', {
@@ -124,9 +125,10 @@
 
   socket.on('changedSyntax', function(data) {
     myEditor.setSyntax(data.new_syntax);
-    return socket.emit('updateContent', {
+    socket.emit('updateContent', {
       new_content: HTMLEntities.decode(this.content.dom.innerHTML)
     });
+    return myEditor.setSyntax(data.new_syntax);
   });
 
   socket.on('changedTheme', function(data) {

@@ -1,9 +1,9 @@
 /*
- * codeshare
- * https://github.com/nicolasbrugneaux/codeshare
- *
- * Copyright (c) 2013 Nicolas Brugneaux
- * Licensed under the MIT license.
+# codeshare
+# https://github.com/nicolasbrugneaux/codeshare
+#
+# Copyright (c) 2013 Nicolas Brugneaux
+# Licensed under the MIT license.
 */
 
 
@@ -123,9 +123,9 @@
         new_syntax: myEditor.syntax
       });
     });
-    return socket.on('changedTheme', function(data) {
+    socket.on('changedTheme', function(data) {
       myEditor.theme = data.new_theme;
-      return socket.broadcast.emit('changedSyntax', {
+      return socket.broadcast.emit('changedTheme', {
         new_theme: myEditor.theme
       });
     });
