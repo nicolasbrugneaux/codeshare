@@ -1,4 +1,11 @@
 /* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+pre code {
+  display: block;
+  background: white;
+  color: #4d4d4c;
+  padding: 0.5em;
+}
+
 .tomorrow-comment, pre .comment, pre .title {
   color: #8e908c;
 }
@@ -29,13 +36,6 @@
 
 .tomorrow-purple, pre .keyword, pre .javascript .function {
   color: #8959a8;
-}
-
-pre code {
-  display: block;
-  background: white;
-  color: #4d4d4c;
-  padding: 0.5em;
 }
 
 pre .coffeescript .javascript,

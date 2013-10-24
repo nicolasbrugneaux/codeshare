@@ -97,6 +97,7 @@ a:focus {
     padding: 0em 0em 0 0em;
 }
 .content pre {
+    font-size: 14px;
     margin-top: 0;
 }
 .content pre:focus,

@@ -1,6 +1,13 @@
 /* Tomorrow Night Bright Theme */
 /* Original theme - https://github.com/chriskempson/tomorrow-theme */
 /* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+pre code {
+  display: block;
+  background: black;
+  color: #eaeaea;
+  padding: 0.5em;
+}
+
 .tomorrow-comment, pre .comment, pre .title {
   color: #969896;
 }
@@ -31,13 +38,6 @@
 
 .tomorrow-purple, pre .keyword, pre .javascript .function {
   color: #c397d8;
-}
-
-pre code {
-  display: block;
-  background: black;
-  color: #eaeaea;
-  padding: 0.5em;
 }
 
 pre .coffeescript .javascript,

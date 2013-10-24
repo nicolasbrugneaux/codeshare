@@ -1,6 +1,13 @@
 /* Tomorrow Night Eighties Theme */
 /* Original theme - https://github.com/chriskempson/tomorrow-theme */
 /* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+pre code {
+  display: block;
+  background: #2d2d2d;
+  color: #cccccc;
+  padding: 0.5em;
+}
+
 .tomorrow-comment, pre .comment, pre .title {
   color: #999999;
 }
@@ -31,13 +38,6 @@
 
 .tomorrow-purple, pre .keyword, pre .javascript .function {
   color: #cc99cc;
-}
-
-pre code {
-  display: block;
-  background: #2d2d2d;
-  color: #cccccc;
-  padding: 0.5em;
 }
 
 pre .coffeescript .javascript,

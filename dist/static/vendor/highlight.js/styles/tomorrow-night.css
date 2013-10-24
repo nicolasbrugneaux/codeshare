@@ -2,6 +2,13 @@
 /* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
 /* Original theme - https://github.com/chriskempson/tomorrow-theme */
 /* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+pre code {
+  display: block;
+  background: #1d1f21;
+  color: #c5c8c6;
+  padding: 0.5em;
+}
+
 .tomorrow-comment, pre .comment, pre .title {
   color: #969896;
 }
@@ -32,13 +39,6 @@
 
 .tomorrow-purple, pre .keyword, pre .javascript .function {
   color: #b294bb;
-}
-
-pre code {
-  display: block;
-  background: #1d1f21;
-  color: #c5c8c6;
-  padding: 0.5em;
 }
 
 pre .coffeescript .javascript,

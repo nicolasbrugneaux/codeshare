@@ -1,16 +1,35 @@
 (function() {
-  var Editor, decodeHTMLEntities, myEditor, socket,
+  var Editor, HTMLEntities, myEditor, socket,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  decodeHTMLEntities = function(text) {
-    var entities, entity, _i, _len;
-    entities = [['apos', '\''], ['amp', '&'], ['lt', '<'], ['gt', '>'], ['nbsp', '	']];
-    for (_i = 0, _len = entities.length; _i < _len; _i++) {
-      entity = entities[_i];
-      text = text.replace(new RegExp('&' + entity[0] + ';', 'g'), entity[1]);
-    }
-    return text;
-  };
+  HTMLEntities = (function() {
+    function HTMLEntities() {}
+
+    HTMLEntities.entities = [['apos', '\''], ['amp', '&'], ['lt', '<'], ['gt', '>'], ['nbsp', '	']];
+
+    HTMLEntities.decode = function(html) {
+      var entity, _i, _len, _ref;
+      _ref = HTMLEntities.entities;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        entity = _ref[_i];
+        html = html.replace(new RegExp("&" + entity[0] + ";", 'g'), entity[1]);
+      }
+      return html;
+    };
+
+    HTMLEntities.encode = function(text) {
+      var entity, _i, _len, _ref;
+      _ref = HTMLEntities.entities;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        entity = _ref[_i];
+        text = text.replace(new RegExp(entity[1], 'g'), "&" + entity[0] + ";");
+      }
+      return text;
+    };
+
+    return HTMLEntities;
+
+  }).call(this);
 
   Editor = (function() {
     function Editor(editor) {
@@ -19,19 +38,20 @@
       this.setSyntax = __bind(this.setSyntax, this);
       this.setContent = __bind(this.setContent, this);
       var _this = this;
-      this.content = {
+      this.content({
         dom: document.querySelector('#editor'),
         raw: ""
-      };
-      this.syntax = {
+      });
+      this.syntax({
         dom: document.querySelector('#syntax'),
         raw: ""
-      };
-      this.theme = {
+      });
+      this.theme({
         dom: document.querySelector('#theme'),
         raw: ""
-      };
+      });
       this.setContent(editor.content);
+      this.setTheme(editor.theme);
       this.syntax.dom.onchange = function(e) {
         _this.setSyntax(e.target.value);
         return socket.emit('changedSyntax', {
@@ -59,18 +79,28 @@
     };
 
     Editor.prototype.setTheme = function(theme) {
+      var r,
+        _this = this;
       this.theme.raw = theme;
       this.theme.dom.value = theme;
-      return document.querySelector('#color-theme').href = "vendor/hightlight.js/styles/" + this.theme.raw + ".css";
+      r = new XMLHttpRequest();
+      r.open("GET", "vendor/highlight.js/styles/" + this.theme.raw + ".css", true);
+      r.onreadystatechange = function() {
+        if (r.readyState === 4 && r.status === 200) {
+          document.querySelector('#color-theme').innerHTML = r.response;
+          return document.body.style.background = document.styleSheets[3].cssRules[0].style['background-color'];
+        }
+      };
+      return r.send();
     };
 
     Editor.prototype.listen = function() {
       var _this = this;
       return setInterval(function() {
-        if (_this.content.dom.innerHTML !== _this.content.raw) {
+        if (HTMLEntities.decode(_this.content.dom.innerHTML) !== _this.content.raw) {
           _this.content.raw = _this.content.dom.innerHTML.replace('<div>', '\n').replace('</div>', '');
           return socket.emit('changedContent', {
-            new_content: decodeHTMLEntities(_this.content.raw)
+            new_content: HTMLEntities.decode(_this.content.raw)
           });
         }
       }, 2000);
@@ -95,7 +125,7 @@
   socket.on('changedSyntax', function(data) {
     myEditor.setSyntax(data.new_syntax);
     return socket.emit('updateContent', {
-      new_content: decodeHTMLEntities(this.content.dom.innerHTML)
+      new_content: HTMLEntities.decode(this.content.dom.innerHTML)
     });
   });
 

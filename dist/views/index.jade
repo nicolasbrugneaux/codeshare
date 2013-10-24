@@ -12,7 +12,7 @@ block body
 					option(selected=editor.theme == item) #{item}
 		div.content
 			pre
-				code#editor.javascript(contentEditable='true')
+				code#editor(contentEditable='true', spellcheck='false')
 
 block scripts
 	include scripts
