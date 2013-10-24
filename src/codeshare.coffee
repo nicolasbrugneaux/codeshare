@@ -124,7 +124,7 @@ io.sockets.on 'connection', (socket) ->
 	
 	socket.on 'changedTheme', (data) ->
 		myEditor.theme = data.new_theme
-		socket.broadcast.emit 'changedSyntax', { new_theme: myEditor.theme }
+		socket.broadcast.emit 'changedTheme', { new_theme: myEditor.theme }
 
 ###
 	Routes

@@ -30,6 +30,7 @@ class Editor
 			
 		@setContent(editor.content)
 		@setTheme(editor.theme)
+		@setSyntax(editor.syntax)
 
 		@syntax.dom.onchange = (e) =>
 			@setSyntax(e.target.value)
