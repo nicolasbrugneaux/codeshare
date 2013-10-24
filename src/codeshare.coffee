@@ -1,9 +1,9 @@
 ###
- * codeshare
- * https://github.com/nicolasbrugneaux/codeshare
- *
- * Copyright (c) 2013 Nicolas Brugneaux
- * Licensed under the MIT license.
+# codeshare
+# https://github.com/nicolasbrugneaux/codeshare
+#
+# Copyright (c) 2013 Nicolas Brugneaux
+# Licensed under the MIT license.
 ###
 
 ###
