@@ -123,7 +123,7 @@
         new_syntax: myEditor.syntax
       });
     });
-    socket.on('changedTheme', function(data) {
+    return socket.on('changedTheme', function(data) {
       myEditor.theme = data.new_theme;
       return socket.broadcast.emit('changedTheme', {
         new_theme: myEditor.theme

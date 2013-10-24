@@ -125,10 +125,9 @@
 
   socket.on('changedSyntax', function(data) {
     myEditor.setSyntax(data.new_syntax);
-    socket.emit('updateContent', {
+    return socket.emit('updateContent', {
       new_content: HTMLEntities.decode(this.content.dom.innerHTML)
     });
-    return myEditor.setSyntax(data.new_syntax);
   });
 
   socket.on('changedTheme', function(data) {

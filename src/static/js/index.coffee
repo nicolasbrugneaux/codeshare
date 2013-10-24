@@ -18,13 +18,13 @@ class HTMLEntities
 
 class Editor
 	constructor: (editor) ->
-		@content
+		@content =
 			dom: document.querySelector('#editor')
 			raw: ""
-		@syntax
+		@syntax =
 			dom: document.querySelector('#syntax')
 			raw: ""
-		@theme
+		@theme =
 			dom: document.querySelector('#theme')
 			raw: ""
 			
