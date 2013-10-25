@@ -2,10 +2,9 @@
 
 module.exports = (grunt) ->
 	# load all grunt tasks
-	require('matchdep').filterDev('grunt-*').forEach((contrib) ->
-		grunt.log.ok([contrib + " is loaded"])
+	require('matchdep').filterDev('grunt-*').forEach (contrib) ->
+		grunt.log.ok ["#{contrib} is loaded"]
 		grunt.loadNpmTasks(contrib)
-	)
 
 	config = 
 		dist: 'dist'
@@ -131,6 +130,6 @@ module.exports = (grunt) ->
 		grunt.util.spawn(options, doneFunction)
 
 	# Default task.
-	grunt.registerTask('default', ['coffee', 'jshint'])
-	grunt.registerTask('test', ['clean', 'coffee', 'simplemocha:backend'])
-	grunt.registerTask('coverage', ['clean', 'coffee', 'coverageBackend'])
+	grunt.registerTask 'default', ['coffee', 'jshint']
+	grunt.registerTask 'test', ['clean', 'coffee', 'simplemocha:backend']
+	grunt.registerTask 'coverage', ['clean', 'coffee', 'coverageBackend']
