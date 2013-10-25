@@ -99,6 +99,10 @@ a:focus {
 .content pre {
     font-size: 14px;
     margin-top: 0;
+    -webkit-tab-size: 4;
+       -moz-tab-size: 4;
+        -o-tab-size:  4;
+            tab-size: 4;
 }
 .content pre:focus,
 .content pre:active,

@@ -13,7 +13,8 @@
 
 
 (function() {
-  var Editor, codeshare, decodeHTMLEntities, express, fs, hljs, http, io, myEditor, path, server;
+  var Editor, codeshare, decodeHTMLEntities, express, fs, highlightCode, hljs, http, io, myEditor, path, server,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   express = require('express');
 
@@ -74,7 +75,7 @@
 
   decodeHTMLEntities = function(text) {
     var entities, entity, _i, _len;
-    entities = [['apos', '\''], ['amp', '&'], ['lt', '<'], ['gt', '>'], ['nbsp', '	']];
+    entities = [['apos', '\''], ['amp', '&'], ['lt', '<'], ['gt', '>'], ['nbsp', '\t']];
     for (_i = 0, _len = entities.length; _i < _len; _i++) {
       entity = entities[_i];
       text = text.replace(new RegExp("&" + entity[0] + ";", 'g'), entity[1]);
@@ -82,45 +83,51 @@
     return text;
   };
 
+  highlightCode = function(syntax, code) {
+    return hljs.highlight(syntax, code.replace(/<(?!br\s*\/?)[^>]+>/g, ''.replace(/<br>/g, '\n'))).value;
+  };
+
   Editor = (function() {
-    function Editor() {
-      this.content = "class Editor\n	constructor: ->\n	@content = 'some code'\n	@syntax	 = 'coffeescript'\n	@theme   = 'github'\n	@syntaxes = fs.readFileSync(path.join(__dirname, 'static/syntaxes')).toString().split('\\n')\n	@themes = fs.readFileSync(path.join(__dirname, 'static/themes')).toString().split('\\n')";
-      this.syntax = 'coffeescript';
-      this.theme = 'idea';
-      this.syntaxes = fs.readFileSync(path.join(__dirname, 'static/syntaxes')).toString().split('\n');
-      this.themes = fs.readFileSync(path.join(__dirname, 'static/themes')).toString().split('\n');
+    function Editor(syntax, theme) {
+      this.setContent = __bind(this.setContent, this);
+      var highlightInfos;
+      highlightInfos = JSON.parse(fs.readFileSync(path.join(__dirname, 'static/highlight.json')));
+      this.syntax = syntax;
+      this.content = decodeHTMLEntities(highlightCode(syntax, highlightInfos.examples[syntax]));
+      this.theme = theme;
+      this.syntaxes = highlightInfos.syntaxes;
+      this.themes = highlightInfos.themes;
     }
+
+    Editor.prototype.setContent = function(content) {
+      return this.content = decodeHTMLEntities(highlightCode(this.syntax, content));
+    };
 
     return Editor;
 
   })();
 
-  myEditor = new Editor;
+  myEditor = new Editor('coffeescript', 'github');
 
   io.sockets.on('connection', function(socket) {
-    myEditor.content = decodeHTMLEntities(hljs.highlight(myEditor.syntax, myEditor.content.replace(/<(?!br\s*\/?)[^>]+>/g, ''.replace(/<br>/g, '\n'))).value);
     socket.emit('init', {
-      editor: myEditor
+      'editor': myEditor
     });
     socket.on('changedContent', function(data) {
-      myEditor.content = hljs.highlight(myEditor.syntax, data.new_content.replace(/<(?!br\s*\/?)[^>]+>/g, ''.replace(/<br>/g, '\n'))).value;
       return socket.broadcast.emit('changedContent', {
-        new_content: decodeHTMLEntities(myEditor.content)
-      });
-    });
-    socket.on('updateContent', function(data) {
-      myEditor.content = hljs.highlight(myEditor.syntax, data.new_content.replace(/<(?!br\s*\/?)[^>]+>/g, ''.replace(/<br>/g, '\n'))).value;
-      socket.emit('changedContent', {
-        new_content: decodeHTMLEntities(myEditor.content)
-      });
-      return socket.broadcast.emit('changedContent', {
-        new_content: decodeHTMLEntities(myEditor.content)
+        'new_content': myEditor.setContent(data.new_content)
       });
     });
     socket.on('changedSyntax', function(data) {
+      console.log(data.new_syntax);
       myEditor.syntax = data.new_syntax;
+      socket.emit('changedSyntax', {
+        'new_syntax': myEditor.syntax,
+        'new_content': myEditor.setContent(data.new_content)
+      });
       return socket.broadcast.emit('changedSyntax', {
-        new_syntax: myEditor.syntax
+        'new_syntax': myEditor.syntax,
+        'new_content': myEditor.setContent(data.new_content)
       });
     });
     return socket.on('changedTheme', function(data) {

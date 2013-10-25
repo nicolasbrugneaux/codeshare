@@ -55,7 +55,7 @@ codeshare.configure ->
 
 #devevelopment only
 if codeshare.get('env') is 'development'
-  codeshare.use express.errorHandler()
+	codeshare.use express.errorHandler()
 
 
 # instantiate server
@@ -68,59 +68,52 @@ decodeHTMLEntities = (text) ->
 		['amp', '&']
 		['lt', '<']
 		['gt', '>']
-		['nbsp', '	']
+		['nbsp', '\t']
 	]
 	for entity in entities
 		text = text.replace new RegExp("&#{entity[0]};", 'g'), entity[1]
 	text
 
-class Editor
-	constructor: ->
-		@content = "class Editor\n	constructor: ->\n	@content = 'some code'\n	@syntax	 = 'coffeescript'\n	@theme   = 'github'\n	@syntaxes = fs.readFileSync(path.join(__dirname, 'static/syntaxes')).toString().split('\\n')\n	@themes = fs.readFileSync(path.join(__dirname, 'static/themes')).toString().split('\\n')"
-		@syntax	 = 'coffeescript'
-		@theme   = 'idea'
-		@syntaxes = fs.readFileSync(path.join(__dirname, 'static/syntaxes')).toString().split('\n')
-		@themes = fs.readFileSync(path.join(__dirname, 'static/themes')).toString().split('\n')
+highlightCode = (syntax, code) ->
+	hljs.highlight(
+		syntax,
+		code
+			.replace /<(?!br\s*\/?)[^>]+>/g, '' # remove html tags but br
+			.replace /<br>/g, '\n' #replace br with \n
+	).value
 
-myEditor = new Editor
+class Editor
+	constructor: (syntax, theme)->
+		highlightInfos = JSON.parse(fs.readFileSync(path.join(__dirname, 'static/highlight.json')))
+		@syntax	 = syntax
+		@content = decodeHTMLEntities highlightCode(syntax, highlightInfos.examples[syntax])
+		@theme   = theme
+		@syntaxes = highlightInfos.syntaxes
+		@themes = highlightInfos.themes
+
+	setContent: (content) =>
+		@content = decodeHTMLEntities highlightCode(@syntax, content)
+
+
+myEditor = new Editor('coffeescript', 'github')
+
 # instantiate socket.io
 io.sockets.on 'connection', (socket) ->
 
-	myEditor.content = decodeHTMLEntities hljs.highlight(
-		myEditor.syntax,
-		myEditor.content
-			.replace /<(?!br\s*\/?)[^>]+>/g, '' # remove html tags but br
-			.replace /<br>/g, '\n' #replace br with \n
-	)
-	.value
-	socket.emit 'init', { editor: myEditor }
+	socket.emit 'init', { 'editor': myEditor }
 
 	socket.on 'changedContent', (data) ->
-		myEditor.content = hljs
-			.highlight(
-				myEditor.syntax,
-				data.new_content
-					.replace /<(?!br\s*\/?)[^>]+>/g, '' # remove html tags but br
-					.replace /<br>/g, '\n' #replace br with \n
-			)
-			.value
-		socket.broadcast.emit 'changedContent', { new_content: decodeHTMLEntities(myEditor.content) }
-
-	socket.on 'updateContent', (data) ->
-		myEditor.content = hljs
-			.highlight(
-				myEditor.syntax,
-				data.new_content
-					.replace /<(?!br\s*\/?)[^>]+>/g, '' # remove html tags but br
-					.replace /<br>/g, '\n' #replace br with \n
-			)
-			.value
-		socket.emit 'changedContent', { new_content: decodeHTMLEntities(myEditor.content) }
-		socket.broadcast.emit 'changedContent', { new_content: decodeHTMLEntities(myEditor.content) }
+		socket.broadcast.emit 'changedContent', { 'new_content': myEditor.setContent(data.new_content) }
 
 	socket.on 'changedSyntax', (data) ->
+		console.log data.new_syntax
 		myEditor.syntax = data.new_syntax
-		socket.broadcast.emit 'changedSyntax', { new_syntax: myEditor.syntax }
+		socket.emit 'changedSyntax',
+			'new_syntax': myEditor.syntax
+			'new_content': myEditor.setContent(data.new_content)
+		socket.broadcast.emit 'changedSyntax',
+			'new_syntax': myEditor.syntax
+			'new_content': myEditor.setContent(data.new_content)
 	
 	socket.on 'changedTheme', (data) ->
 		myEditor.theme = data.new_theme

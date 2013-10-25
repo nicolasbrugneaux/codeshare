@@ -1,3 +1,37 @@
+#
+# insertAtCursor = (editor,text) ->
+# 	strPos = 0
+# 	console.log editor.selectionStart
+# 	br = if editor.selectionStart or editor.selectionStart is '0' then "ff" else ( if document.selection then "ie" else false )
+# 	console.log br
+# 	if br is "ie"
+# 		console.log 'test1'
+# 		editor.focus()
+# 		range = document.selection.createRange()
+# 		range.moveStart('character', -editor.innerHTML.length)
+# 		strPos = range.text.length
+
+# 	else if br is "ff"
+# 		console.log 'test2'
+# 		strPos = editor.selectionStart
+# 		front = (editor.innerHTML).substring(0,strPos)
+# 		back = (editor.innerHTML).substring(strPos,editor.innerHTML.length)
+# 		editor.innerHTML=front+text+back;strPos = strPos + text.length
+# 		if br is "ie"
+# 			console.log 'test3'
+# 			editor.focus();
+# 			range = document.selection.createRange()
+# 			range.moveStart('character', -editor.innerHTML.length)
+# 			range.moveStart('character', strPos)
+# 			range.moveEnd('character', 0)
+# 			range.select()
+# 		else if br is "ff"
+# 			console.log 'test4'
+# 			editor.selectionStart = strPos
+# 			editor.selectionEnd = strPos
+# 			editor.focus()
+#
+
 class HTMLEntities
 	@entities: [
 		['apos', '\'']
@@ -34,11 +68,34 @@ class Editor
 
 		@syntax.dom.onchange = (e) =>
 			@setSyntax(e.target.value)
-			socket.emit('changedSyntax', { new_syntax: @syntax.raw })
+			socket.emit('changedSyntax', { new_syntax: @syntax.raw, new_content: HTMLEntities.decode(@content.raw) })
 
 		@theme.dom.onchange = (e) =>
 			@setTheme(e.target.value)
 			socket.emit('changedTheme', { new_theme: @theme.raw })
+
+		# not working quite yet ^^
+		@content.dom.onkeydown = (e) ->
+			keyCode = e.keyCode || e.which
+			if keyCode is 9 and not e.shiftKey
+				e.preventDefault()
+
+				start = @selectionStart
+				end = @selectionEnd
+				console.log start, end
+				@focus()
+
+				target = e.target
+				value = target.innerHTML
+
+				target.innerHTML = "	#{value}"
+				@selectionStart = @selectionEnd = start + 1
+				return false
+
+			else if keyCode is 9 and e.shiftKey
+				e.preventDefault()
+				#ToDO
+
 		@listen()
 
 	setContent: (content) =>
@@ -81,7 +138,7 @@ socket.on 'changedContent', (data) ->
 
 socket.on 'changedSyntax', (data) ->
 	myEditor.setSyntax(data.new_syntax)
-	socket.emit('updateContent', { new_content: HTMLEntities.decode(@content.dom.innerHTML) })
+	myEditor.setContent(data.new_content)
 
 socket.on 'changedTheme', (data) ->
 	myEditor.setTheme(data.new_theme)

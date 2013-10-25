@@ -56,7 +56,8 @@
       this.syntax.dom.onchange = function(e) {
         _this.setSyntax(e.target.value);
         return socket.emit('changedSyntax', {
-          new_syntax: _this.syntax.raw
+          new_syntax: _this.syntax.raw,
+          new_content: HTMLEntities.decode(_this.content.raw)
         });
       };
       this.theme.dom.onchange = function(e) {
@@ -64,6 +65,24 @@
         return socket.emit('changedTheme', {
           new_theme: _this.theme.raw
         });
+      };
+      this.content.dom.onkeydown = function(e) {
+        var end, keyCode, start, target, value;
+        keyCode = e.keyCode || e.which;
+        if (keyCode === 9 && !e.shiftKey) {
+          e.preventDefault();
+          start = this.selectionStart;
+          end = this.selectionEnd;
+          console.log(start, end);
+          this.focus();
+          target = e.target;
+          value = target.innerHTML;
+          target.innerHTML = "	" + value;
+          this.selectionStart = this.selectionEnd = start + 1;
+          return false;
+        } else if (keyCode === 9 && e.shiftKey) {
+          return e.preventDefault();
+        }
       };
       this.listen();
     }
@@ -125,9 +144,7 @@
 
   socket.on('changedSyntax', function(data) {
     myEditor.setSyntax(data.new_syntax);
-    return socket.emit('updateContent', {
-      new_content: HTMLEntities.decode(this.content.dom.innerHTML)
-    });
+    return myEditor.setContent(data.new_content);
   });
 
   socket.on('changedTheme', function(data) {
