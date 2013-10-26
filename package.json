@@ -22,13 +22,13 @@
   "dependencies": {
     "express": "3.4",
     "jade": "0.35",
-    "socket.io":"latest",
-    "highlight.js":"latest"
+    "socket.io": "latest",
+    "highlight.js": "latest"
   },
   "devDependencies": {
     "matchdep": "~0.1.1",
     "grunt-contrib-jshint": "~0.6.0",
-    "grunt-contrib-less":"~0.7.0",
+    "grunt-contrib-less": "~0.7.0",
     "grunt-contrib-watch": "~0.5.0",
     "grunt-contrib-coffee": "~0.7.0",
     "grunt-simple-mocha": "~0.4.0",
@@ -36,6 +36,8 @@
     "sinon-chai": "~2.4.0",
     "chai": "~1.7.2",
     "mocha": "~1.12.1",
-    "sinon": "~1.7.3"
+    "sinon": "~1.7.3",
+    "grunt-nodemon": "~0.1.1",
+    "grunt-concurrent": "~0.4.1"
   }
 }

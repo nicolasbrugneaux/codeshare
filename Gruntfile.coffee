@@ -14,7 +14,16 @@ module.exports = (grunt) ->
 
 	# Project configuration.
 	grunt.initConfig
+
 		config: config
+
+		concurrent:
+			dev:
+				tasks: ['watch', 'nodemon']
+				options:
+					logConcurrentOutput: true
+
+
 		clean:
 			dist:
 				files: [
@@ -26,22 +35,21 @@ module.exports = (grunt) ->
 					]
 				]
 		coffee:
-			dist:
+			server:
 				files: [
-					{
-						expand: true,
-						cwd: '<%= config.src %>'
-						src: '{,*/}*.coffee'
-						dest: '<%= config.dist %>'
-						ext: '.js'
-					},
-					{
-						expand: true,
-						cwd: '<%= config.src %>'
-						src: 'static/js/{,*/}*.coffee'
-						dest: '<%= config.dist %>'
-						ext: '.js'
-					}
+					expand: true,
+					cwd: '<%= config.src %>'
+					src: '{,*/}*.coffee'
+					dest: '<%= config.dist %>'
+					ext: '.js'
+				]
+			static:
+				files: [
+					expand: true,
+					cwd: '<%= config.src %>'
+					src: 'static/js/{,*/}*.coffee'
+					dest: '<%= config.dist %>'
+					ext: '.js'
 				]
 			test:
 				files: [
@@ -62,16 +70,20 @@ module.exports = (grunt) ->
 			gruntfile:
 				files: '<%= jshint.gruntfile.src %>'
 				tasks: ['jshint:gruntfile']
-			dist:
+			static:
 				files: [
-					'<%= config.src %>/*'
 					'<%= config.src %>/static/js/*'
 					'<%= config.src %>/static/css/*'
 				]
-				tasks: ['coffee:dist', 'simplemocha:backend', 'less:development']
+				tasks: ['coffee:static', 'less:development']
 			test:
 				files: '<%= config.srcTest %>/specs/*'
 				tasks: ['coffee:test', 'simplemocha:backend']
+			server:
+				files: [
+					'<%= config.src %>/*'
+				]
+				tasks: ['coffee:server']
 
 		simplemocha:
 			options:
@@ -97,6 +109,7 @@ module.exports = (grunt) ->
 					# tests
 					'test/dist/**/*.spec.js'
 				]
+		
 		less:
 			development:
 				options:
@@ -113,6 +126,12 @@ module.exports = (grunt) ->
 				files:
 					'<%= config.dist %>/static/css/style.min.css': '<%= config.src %>/static/css/style.less'
 
+		nodemon:
+			dev:
+				options:
+					file: '<%= config.dist %>/codeshare.js'
+					args: ['development']
+					ignoredFiles: ['static/**', 'vendor/**'],
 
 	grunt.registerTask 'coverageBackend', 'Test backend files as well as code coverage.', () ->
 		done = @async()
@@ -148,5 +167,6 @@ module.exports = (grunt) ->
 
 	# Default task.
 	grunt.registerTask 'default', ['coffee', 'jshint', 'less:development']
-	grunt.registerTask 'test', ['clean', 'coffee', 'less:development', 'simplemocha:backend']
-	grunt.registerTask 'coverage', ['clean', 'coffee', 'less', 'coverageBackend']
+	grunt.registerTask 'devserver', ['concurrent:dev']
+	grunt.registerTask 'test', ['clean', 'coffee', 'simplemocha:backend']
+	grunt.registerTask 'coverage', ['clean', 'coffee', 'coverageBackend']
