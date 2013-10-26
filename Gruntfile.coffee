@@ -66,8 +66,9 @@ module.exports = (grunt) ->
 				files: [
 					'<%= config.src %>/*'
 					'<%= config.src %>/static/js/*'
+					'<%= config.src %>/static/css/*'
 				]
-				tasks: ['coffee:dist', 'simplemocha:backend']
+				tasks: ['coffee:dist', 'simplemocha:backend', 'less:development']
 			test:
 				files: '<%= config.srcTest %>/specs/*'
 				tasks: ['coffee:test', 'simplemocha:backend']
@@ -96,6 +97,22 @@ module.exports = (grunt) ->
 					# tests
 					'test/dist/**/*.spec.js'
 				]
+		less:
+			development:
+				options:
+					paths: ['<%= config.src %>/static/css/']
+					yuicompress: false
+				
+				files: 
+					'<%= config.dist %>/static/css/style.css': '<%= config.src %>/static/css/style.less'
+			
+			production:
+				options:
+					paths: ['<%= config.src %>/static/css/']
+					yuicompress: true
+				files:
+					'<%= config.dist %>/static/css/style.min.css': '<%= config.src %>/static/css/style.less'
+
 
 	grunt.registerTask 'coverageBackend', 'Test backend files as well as code coverage.', () ->
 		done = @async()
@@ -130,6 +147,6 @@ module.exports = (grunt) ->
 		grunt.util.spawn(options, doneFunction)
 
 	# Default task.
-	grunt.registerTask 'default', ['coffee', 'jshint']
-	grunt.registerTask 'test', ['clean', 'coffee', 'simplemocha:backend']
-	grunt.registerTask 'coverage', ['clean', 'coffee', 'coverageBackend']
+	grunt.registerTask 'default', ['coffee', 'jshint', 'less:development']
+	grunt.registerTask 'test', ['clean', 'coffee', 'less:development', 'simplemocha:backend']
+	grunt.registerTask 'coverage', ['clean', 'coffee', 'less', 'coverageBackend']
