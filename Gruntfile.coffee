@@ -3,7 +3,6 @@
 module.exports = (grunt) ->
 	# load all grunt tasks
 	require('matchdep').filterDev('grunt-*').forEach (contrib) ->
-		grunt.log.ok ["#{contrib} is loaded"]
 		grunt.loadNpmTasks(contrib)
 
 	config = 
@@ -132,6 +131,8 @@ module.exports = (grunt) ->
 					file: '<%= config.dist %>/codeshare.js'
 					args: ['development']
 					ignoredFiles: ['static/**', 'vendor/**'],
+					watchedExtensions: ['js'],
+					watchedFolders: ['dist']
 
 	grunt.registerTask 'coverageBackend', 'Test backend files as well as code coverage.', () ->
 		done = @async()
