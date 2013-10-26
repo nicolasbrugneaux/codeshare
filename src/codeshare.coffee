@@ -46,12 +46,12 @@ codeshare.configure ->
 	codeshare.use codeshare.router
 
 	# development only
-	if codeshare.get('env') is 'development'
+	if codeshare.get('env') is 'development' or process.argv is 'development'
 			codeshare.use express.errorHandler({ dumpExceptions: true, showStack: true })
 
 	# production only
-	if codeshare.get('env') is 'production'
-			codeshare.use express.errorHandler()
+	if codeshare.get('env') is 'production'or process.argv is 'production'
+		console.log 'prod'
 
 #devevelopment only
 if codeshare.get('env') is 'development'
