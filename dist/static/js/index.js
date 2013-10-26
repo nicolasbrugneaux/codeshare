@@ -84,6 +84,9 @@
           return e.preventDefault();
         }
       };
+      if (document.querySelector('#disconnected .loading').firstChild.innerHTML === '<p>C</p>') {
+        document.querySelector('#disconnected .loading').innerHTML = '<div class="letter">R</div><div class="letter">E</div>' + document.querySelector('#disconnected .loading').innerHTML;
+      }
       this.listen();
     }
 
@@ -108,7 +111,8 @@
       r.onreadystatechange = function() {
         if (r.readyState === 4 && r.status === 200) {
           document.querySelector('#color-theme').innerHTML = r.response;
-          return document.body.style.background = document.styleSheets[3].cssRules[0].style['background-color'];
+          document.body.style.background = document.styleSheets[4].cssRules[0].style['background-color'];
+          return document.querySelector('html').style.background = document.styleSheets[4].cssRules[0].style['background-color'];
         }
       };
       return r.send();
@@ -136,6 +140,16 @@
 
   socket.on('init', function(data) {
     return myEditor = new Editor(data.editor);
+  });
+
+  socket.on('disconnect', function() {
+    document.querySelector('#disconnected').style.position = 'fixed';
+    return document.querySelector('#disconnected').style.display = 'block';
+  });
+
+  socket.on('connect', function() {
+    document.querySelector('#disconnected').style.position = 'relative';
+    return document.querySelector('#disconnected').style.display = 'none';
   });
 
   socket.on('changedContent', function(data) {

@@ -95,7 +95,8 @@ class Editor
 			else if keyCode is 9 and e.shiftKey
 				e.preventDefault()
 				#ToDO
-
+		if document.querySelector('#disconnected .loading').firstChild.innerHTML is '<p>C</p>'
+			document.querySelector('#disconnected .loading').innerHTML = '<div class="letter">R</div><div class="letter">E</div>' + document.querySelector('#disconnected .loading').innerHTML
 		@listen()
 
 	setContent: (content) =>
@@ -115,7 +116,8 @@ class Editor
 		r.onreadystatechange = =>
 			if r.readyState is 4 and r.status is 200
 				document.querySelector('#color-theme').innerHTML = r.response
-				document.body.style.background = document.styleSheets[3].cssRules[0].style['background-color']
+				document.body.style.background = document.styleSheets[4].cssRules[0].style['background-color']
+				document.querySelector('html').style.background = document.styleSheets[4].cssRules[0].style['background-color']
 		r.send()
 		
 
@@ -132,6 +134,15 @@ socket = io.connect('http://localhost')
 
 socket.on 'init', (data) ->
 	myEditor = new Editor( data.editor )
+
+socket.on 'disconnect', () ->
+	document.querySelector('#disconnected').style.position = 'fixed'
+	document.querySelector('#disconnected').style.display = 'block'
+
+
+socket.on 'connect', () ->
+	document.querySelector('#disconnected').style.position = 'relative'
+	document.querySelector('#disconnected').style.display = 'none'
 
 socket.on 'changedContent', (data) ->
 	myEditor.setContent(data.new_content)
