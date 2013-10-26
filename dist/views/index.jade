@@ -3,13 +3,6 @@ extends layout
 block body
 	// content
 	div#main-content.pure-u-1
-		div#config
-			select#syntax
-				for item in editor.syntaxes
-					option(selected=editor.syntax == item) #{item}
-			select#theme
-				for item in editor.themes
-					option(selected=editor.theme == item) #{item}
 		div.content
 			pre
 				code#editor(contentEditable='true', spellcheck='false')

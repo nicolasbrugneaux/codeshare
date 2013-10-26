@@ -2,12 +2,31 @@
 div.sidebar.pure-u
 	header.header
 		hgroup
-			h1.brand-title #{title}
-			h2.brand-tagline Inspired by codeshare.io with love.
+			h1#logo #{title}
+			h2.subtitle Inspired by codeshare.io with love.
 		nav.nav
 			ul.nav-list
+
 				li.nav-item
-					a.pure-button(href="https://github.com/nicolasbrugneaux/codeshare") Github Repository
+					a.btn.btn-danger.full-width(href="/") New file
+
+				li.nav-title SYNTAX
+				li.nav-item
+					select#syntax
+						for item in editor.syntaxes
+							option(selected=editor.syntax == item) #{item}
+				
+				li.nav-title THEME
+				li.nav-item
+					select#theme
+						for item in editor.themes
+							option(selected=editor.theme == item) #{item}
+
+				li.nav-separator
+					span
+
+				li.nav-item
+					a.btn.btn-primary.full-width(href="https://github.com/nicolasbrugneaux/codeshare", target="_github") Fork on Github
 
 	block footer
 		include footer
