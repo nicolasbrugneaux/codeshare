@@ -54,14 +54,14 @@
     codeshare.use(express["static"](path.join(__dirname, 'static')));
     codeshare.use('/static/public', express["static"](path.join(__dirname, 'public')));
     codeshare.use(codeshare.router);
-    if (codeshare.get('env') === 'development') {
+    if (codeshare.get('env') === 'development' || process.argv === 'development') {
       codeshare.use(express.errorHandler({
         dumpExceptions: true,
         showStack: true
       }));
     }
-    if (codeshare.get('env') === 'production') {
-      return codeshare.use(express.errorHandler());
+    if (codeshare.get('env') === 'production' || process.argv === 'production') {
+      return console.log('prod');
     }
   });
 
