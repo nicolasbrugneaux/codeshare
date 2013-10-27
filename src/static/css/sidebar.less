@@ -1,0 +1,160 @@
+/* Sidebar */
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: @sidebar-width;
+    margin-left: -(@sidebar-width);
+    background: @sidebar-bg-blue-dark;
+    color: #fff;
+
+    .header {
+        margin: 80px 20px 0px;
+    }
+
+    #logo {
+
+    }
+
+    .subtitle {
+        font-weight: 400;
+        font-size: @font-size * 1.1;
+        font-style: italic;
+    }
+
+    ul.nav-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        width: 100%;
+        li {
+            width: 100%;
+            &.nav-item {
+                display: inline-block;
+                *display: inline;
+                zoom: 1;
+            }
+            &.nav-separator {
+                float: left;
+                display: inline-block;
+                height: 4px;
+                width: 100%;
+                margin: 15px 0px 80px;   
+                text-align: center;
+                span {
+                    display: inline-block;
+                    height: 4px;
+                    width: 80px;
+                    background: @sidebar-bg-blue-light;
+                }
+            }
+            &.nav-title {
+                text-transform: uppercase;
+                font-size: @font-size * 0.7;
+                font-weight: 700;
+                color: @sidebar-text-gray-dark;
+                margin-top: 15px;
+            }
+        }
+    
+
+        a.btn, button.btn {
+            display: inline-block;
+            float: left;
+            color: #fff;
+            text-shadow: 0px 1px 2px darken(@sidebar-bg-blue-light, 5%);
+            background: @sidebar-bg-blue-light;
+            border-radius: 3px;
+            border:0;
+            padding: 0;
+            text-decoration: none;
+            font-size: @font-size * 0.9;
+            font-weight: 700;
+            height: 40px;
+            line-height: 40px;
+            margin: 5px 0px;
+            text-align: center;
+            cursor: pointer;
+            &.btn-primary {
+                &:hover {
+                    background: @sidebar-text-blue-light;
+                }
+            }
+            &.btn-danger {
+                background: @sidebar-text-red-light;
+                &:hover {
+                    background: lighten(@sidebar-text-red-light, 5%);
+                }
+            }
+            &.full-width {
+                display: block;
+                width: 100% !important;
+            }
+        }
+
+        select {
+            border: none;
+            border-radius: 3px;
+            font-weight: 700;
+            height: 40px;
+            line-height: 40px;
+            background: @sidebar-bg-blue-light;
+            color: #fff;
+            width: 100%;
+            padding: 0px 0px 0px 10px;
+            margin: 5px 0px;
+            cursor: pointer;
+            &:hover, &:focus {
+                background: lighten(@sidebar-bg-blue-light, 5%);
+            }
+        }
+        #user_list {
+            margin-top: 0;
+            padding-left: 0;
+            font-size: @font-size * 0.7;
+            text-transform: uppercase;
+            .self {
+                input {
+                    color: @sidebar-text-gray-dark;
+                    margin: 20px 0 5px;
+                    background: transparent;
+                    border: none;
+                    border-bottom: 3px dotted @sidebar-bg-blue-light;
+                    line-height: 19px;
+                    font-family: inherit;
+                    font-size: 14px;
+                    outline: none;
+                    padding: 0;
+                    padding-bottom: 3px;
+                    float:left;
+                    width:75%;
+                }
+                button {
+                    float: right;
+                    width:40px;
+                    height:40px;
+                }
+            }
+        }
+
+    }
+    .footer {
+        font-size:2em;
+        .pure-menu {
+            background: transparent;
+        }
+        text-align: center;
+        padding: 1em 0;
+        a {
+            color: #ccc;
+            font-size: 80%;
+        }
+        .pure-menu a:hover,
+        .pure-menu a:focus {
+            background: none;
+            color: @sidebar-text-blue-light;
+
+        }
+    }
+}

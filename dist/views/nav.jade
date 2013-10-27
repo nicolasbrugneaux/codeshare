@@ -22,12 +22,11 @@ div.sidebar.pure-u
 						for item in editor.themes
 							option(selected=editor.theme == item) #{item}
 
-
 				li.nav-title CONNECTED USERS
 					ul#user_list
 						li.self
-							button#change_name.btn.btn-danger.full-width Change name
 							input#username(placeholder='Anonymous')
+							button#change_name.btn.btn-primary.icon.icon-arrow-sync
 
 				li.nav-separator
 					span
