@@ -61,18 +61,18 @@ class Editor
 		@theme =
 			dom: document.querySelector('#theme')
 			raw: ""
+		@username =
+			dom: document.querySelector('#username')
+			btn: document.querySelector('#change_name')
+			raw: ""
+		@users = 
+			dom: document.querySelector('#user_list')
+			raw: []
 			
 		@setContent(editor.content)
 		@setTheme(editor.theme)
 		@setSyntax(editor.syntax)
-
-		@syntax.dom.onchange = (e) =>
-			@setSyntax(e.target.value)
-			socket.emit('changedSyntax', { new_syntax: @syntax.raw, new_content: HTMLEntities.decode(@content.raw) })
-
-		@theme.dom.onchange = (e) =>
-			@setTheme(e.target.value)
-			socket.emit('changedTheme', { new_theme: @theme.raw })
+		@setUsername('')
 
 		# not working quite yet ^^
 		@content.dom.onkeydown = (e) ->
@@ -95,6 +95,7 @@ class Editor
 			else if keyCode is 9 and e.shiftKey
 				e.preventDefault()
 				#ToDO
+
 		if document.querySelector('#disconnected .loading').firstChild.innerHTML is '<p>C</p>'
 			document.querySelector('#disconnected .loading').innerHTML = '<div class="letter">R</div><div class="letter">E</div>' + document.querySelector('#disconnected .loading').innerHTML
 		@listen()
@@ -119,7 +120,23 @@ class Editor
 				document.body.style.background = document.styleSheets[4].cssRules[0].style['background-color']
 				document.querySelector('html').style.background = document.styleSheets[4].cssRules[0].style['background-color']
 		r.send()
+
+	setUsername: (name) =>
+		@username.dom.value = name
+		@username.raw = name
+		@users[socket.socket.sessionid] = name
 		
+
+	setUsers: (users) =>
+		console.log users
+		@users.raw = users
+		input = @users.dom.firstChild
+		@users.dom.innerHTML = user_list = ""
+		for id, name of users
+			if id != socket.socket.sessionid
+				user_list += "<li>#{name}</li>"
+		@users.dom.appendChild(input)
+		@users.dom.firstChild.insertAdjacentHTML('afterend', user_list)
 
 	listen: =>
 		setInterval =>
@@ -134,6 +151,20 @@ socket = io.connect('http://localhost')
 
 socket.on 'init', (data) ->
 	myEditor = new Editor( data.editor )
+	myEditor.setUsers(data.user_list)
+
+	myEditor.syntax.dom.onchange = (e) =>
+		myEditor.setSyntax(e.target.value)
+		socket.emit('changedSyntax', { new_syntax: myEditor.syntax.raw, new_content: HTMLEntities.decode(myEditor.content.raw) })
+
+	myEditor.theme.dom.onchange = (e) =>
+		myEditor.setTheme(e.target.value)
+		socket.emit('changedTheme', { new_theme: myEditor.theme.raw })
+
+	myEditor.username.btn.onclick = (e) =>
+		console.log myEditor.username.dom.value
+		myEditor.setUsername(myEditor.username.dom.value)
+		socket.emit('changedName', { new_name: myEditor.username.dom.value })
 
 socket.on 'disconnect', () ->
 	document.querySelector('#disconnected').style.position = 'fixed'
@@ -153,3 +184,6 @@ socket.on 'changedSyntax', (data) ->
 
 socket.on 'changedTheme', (data) ->
 	myEditor.setTheme(data.new_theme)
+
+socket.on 'updateUsers', (data) ->
+	myEditor.setUsers(data.user_list)

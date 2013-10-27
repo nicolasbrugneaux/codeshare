@@ -13,7 +13,7 @@
 
 
 (function() {
-  var Editor, codeshare, decodeHTMLEntities, express, fs, highlightCode, hljs, http, io, myEditor, path, server,
+  var Editor, codeshare, decodeHTMLEntities, express, fs, highlightCode, hljs, http, io, myEditor, path, server, users,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   express = require('express');
@@ -109,9 +109,16 @@
 
   myEditor = new Editor('coffeescript', 'github');
 
+  users = {};
+
   io.sockets.on('connection', function(socket) {
+    users[socket.id] = 'Anonymous';
     socket.emit('init', {
-      'editor': myEditor
+      'editor': myEditor,
+      'user_list': users
+    });
+    socket.broadcast.emit('updateUsers', {
+      'user_list': users
     });
     socket.on('changedContent', function(data) {
       return socket.broadcast.emit('changedContent', {
@@ -119,21 +126,28 @@
       });
     });
     socket.on('changedSyntax', function(data) {
-      console.log(data.new_syntax);
       myEditor.syntax = data.new_syntax;
-      socket.emit('changedSyntax', {
-        'new_syntax': myEditor.syntax,
-        'new_content': myEditor.setContent(data.new_content)
-      });
       return socket.broadcast.emit('changedSyntax', {
         'new_syntax': myEditor.syntax,
         'new_content': myEditor.setContent(data.new_content)
       });
     });
-    return socket.on('changedTheme', function(data) {
+    socket.on('changedTheme', function(data) {
       myEditor.theme = data.new_theme;
       return socket.broadcast.emit('changedTheme', {
         new_theme: myEditor.theme
+      });
+    });
+    socket.on('changedName', function(data) {
+      users[socket.id] = data.new_name === '' ? 'Anonymous' : data.new_name;
+      return socket.broadcast.emit('updateUsers', {
+        'user_list': users
+      });
+    });
+    return socket.on('disconnect', function() {
+      delete users[socket.id];
+      return socket.broadcast.emit('updateUsers', {
+        'user_list': users
       });
     });
   });

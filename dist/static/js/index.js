@@ -34,10 +34,11 @@
   Editor = (function() {
     function Editor(editor) {
       this.listen = __bind(this.listen, this);
+      this.setUsers = __bind(this.setUsers, this);
+      this.setUsername = __bind(this.setUsername, this);
       this.setTheme = __bind(this.setTheme, this);
       this.setSyntax = __bind(this.setSyntax, this);
       this.setContent = __bind(this.setContent, this);
-      var _this = this;
       this.content = {
         dom: document.querySelector('#editor'),
         raw: ""
@@ -50,22 +51,19 @@
         dom: document.querySelector('#theme'),
         raw: ""
       };
+      this.username = {
+        dom: document.querySelector('#username'),
+        btn: document.querySelector('#change_name'),
+        raw: ""
+      };
+      this.users = {
+        dom: document.querySelector('#user_list'),
+        raw: []
+      };
       this.setContent(editor.content);
       this.setTheme(editor.theme);
       this.setSyntax(editor.syntax);
-      this.syntax.dom.onchange = function(e) {
-        _this.setSyntax(e.target.value);
-        return socket.emit('changedSyntax', {
-          new_syntax: _this.syntax.raw,
-          new_content: HTMLEntities.decode(_this.content.raw)
-        });
-      };
-      this.theme.dom.onchange = function(e) {
-        _this.setTheme(e.target.value);
-        return socket.emit('changedTheme', {
-          new_theme: _this.theme.raw
-        });
-      };
+      this.setUsername('');
       this.content.dom.onkeydown = function(e) {
         var end, keyCode, start, target, value;
         keyCode = e.keyCode || e.which;
@@ -118,6 +116,28 @@
       return r.send();
     };
 
+    Editor.prototype.setUsername = function(name) {
+      this.username.dom.value = name;
+      this.username.raw = name;
+      return this.users[socket.socket.sessionid] = name;
+    };
+
+    Editor.prototype.setUsers = function(users) {
+      var id, input, name, user_list;
+      console.log(users);
+      this.users.raw = users;
+      input = this.users.dom.firstChild;
+      this.users.dom.innerHTML = user_list = "";
+      for (id in users) {
+        name = users[id];
+        if (id !== socket.socket.sessionid) {
+          user_list += "<li>" + name + "</li>";
+        }
+      }
+      this.users.dom.appendChild(input);
+      return this.users.dom.firstChild.insertAdjacentHTML('afterend', user_list);
+    };
+
     Editor.prototype.listen = function() {
       var _this = this;
       return setInterval(function() {
@@ -139,7 +159,29 @@
   socket = io.connect('http://localhost');
 
   socket.on('init', function(data) {
-    return myEditor = new Editor(data.editor);
+    var _this = this;
+    myEditor = new Editor(data.editor);
+    myEditor.setUsers(data.user_list);
+    myEditor.syntax.dom.onchange = function(e) {
+      myEditor.setSyntax(e.target.value);
+      return socket.emit('changedSyntax', {
+        new_syntax: myEditor.syntax.raw,
+        new_content: HTMLEntities.decode(myEditor.content.raw)
+      });
+    };
+    myEditor.theme.dom.onchange = function(e) {
+      myEditor.setTheme(e.target.value);
+      return socket.emit('changedTheme', {
+        new_theme: myEditor.theme.raw
+      });
+    };
+    return myEditor.username.btn.onclick = function(e) {
+      console.log(myEditor.username.dom.value);
+      myEditor.setUsername(myEditor.username.dom.value);
+      return socket.emit('changedName', {
+        new_name: myEditor.username.dom.value
+      });
+    };
   });
 
   socket.on('disconnect', function() {
@@ -163,6 +205,10 @@
 
   socket.on('changedTheme', function(data) {
     return myEditor.setTheme(data.new_theme);
+  });
+
+  socket.on('updateUsers', function(data) {
+    return myEditor.setUsers(data.user_list);
   });
 
 }).call(this);

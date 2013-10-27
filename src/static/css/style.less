@@ -18,7 +18,6 @@ html, body {
     padding-left: @sidebar-width;
     position: relative;
 }
-
 #disconnected {
     opacity:0.5;
     background:#000;
@@ -27,6 +26,11 @@ html, body {
     height:100%;
     z-index:10;
     position:fixed;
+    -webkit-animation: fadein 2s; /* Safari and Chrome */
+       -moz-animation: fadein 2s; /* Firefox */
+        -ms-animation: fadein 2s; /* Internet Explorer */
+         -o-animation: fadein 2s; /* Opera */
+            animation: fadein 2s;
 
     .loading {
         display:block;
@@ -51,7 +55,13 @@ html, body {
         }
     }
 }
+@media (max-width: 767px) {
+    #disconnected {
+        width:100%;
+        left:0;
 
+    }
+}
 .sidebar {
     position: fixed;
     top: 0;
@@ -111,13 +121,15 @@ html, body {
         }
     
 
-        a.btn {
+        a.btn, button.btn {
             display: inline-block;
             float: left;
             color: #fff;
             text-shadow: 0px 1px 2px darken(@sidebar-bg-blue-light, 5%);
             background: @sidebar-bg-blue-light;
             border-radius: 3px;
+            border:0;
+            padding: 0;
             text-decoration: none;
             font-size: @font-size * 0.9;
             font-weight: 700;
@@ -125,6 +137,7 @@ html, body {
             line-height: 40px;
             margin: 5px 0px;
             text-align: center;
+            cursor: pointer;
             &.btn-primary {
                 &:hover {
                     background: @sidebar-text-blue-light;
@@ -156,6 +169,24 @@ html, body {
             cursor: pointer;
             &:hover, &:focus {
                 background: lighten(@sidebar-bg-blue-light, 5%);
+            }
+        }
+        #user_list {
+            font-size: @font-size * 0.7;
+            text-transform: uppercase;
+            .self {
+                input {
+                    color: @sidebar-text-gray-dark;
+                    margin: 0;
+                    background: transparent;
+                    border: none;
+                    border-bottom: 2px dotted @sidebar-bg-blue-light;
+                    line-height: 19px;
+                    font-family: inherit;
+                    font-size: 14px;
+                    outline: none;
+                    padding: 0;
+                }
             }
         }
 

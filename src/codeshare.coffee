@@ -96,28 +96,47 @@ class Editor
 
 
 myEditor = new Editor('coffeescript', 'github')
+users = {}
 
 # instantiate socket.io
 io.sockets.on 'connection', (socket) ->
+	# set arbitrary name to new user and add it in our user list.
+	users[socket.id] = 'Anonymous'
 
-	socket.emit 'init', { 'editor': myEditor }
+	# send the current state of the editor to new user and the current state of user list to the other users
+	socket.emit 'init', { 'editor': myEditor, 'user_list': users }
+	socket.broadcast.emit 'updateUsers', { 'user_list': users }
 
+
+	# send the new content to other users
 	socket.on 'changedContent', (data) ->
 		socket.broadcast.emit 'changedContent', { 'new_content': myEditor.setContent(data.new_content) }
 
+
+	# send new syntax AND newly highlighted content
 	socket.on 'changedSyntax', (data) ->
-		console.log data.new_syntax
 		myEditor.syntax = data.new_syntax
-		socket.emit 'changedSyntax',
-			'new_syntax': myEditor.syntax
-			'new_content': myEditor.setContent(data.new_content)
 		socket.broadcast.emit 'changedSyntax',
 			'new_syntax': myEditor.syntax
 			'new_content': myEditor.setContent(data.new_content)
+
 	
+	# send new theme name, the request is done on client side
 	socket.on 'changedTheme', (data) ->
 		myEditor.theme = data.new_theme
 		socket.broadcast.emit 'changedTheme', { new_theme: myEditor.theme }
+
+
+	# set new name if a user updates it
+	socket.on 'changedName', (data) ->
+		users[socket.id] = if data.new_name is '' then 'Anonymous' else data.new_name
+		socket.broadcast.emit 'updateUsers', { 'user_list': users }
+
+	socket.on 'disconnect', () ->
+		delete users[socket.id]
+		socket.broadcast.emit 'updateUsers', { 'user_list': users }
+
+
 
 ###
 	Routes
